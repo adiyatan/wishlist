@@ -16,7 +16,7 @@ import id.ac.unpas.agenda.models.Wishlist
 import id.ac.unpas.agenda.persistences.WishlistDao
 
 @Composable
-fun ListWishlistScreen(wishlistDao: WishlistDao) {
+fun ListWishlistScreen(wishlistDao: WishlistDao, onEditItem: (Wishlist) -> Unit) {
     val wishlistItems: LiveData<List<Wishlist>> = wishlistDao.loadAll()
     val items: List<Wishlist> by wishlistItems.observeAsState(initial = listOf())
 
@@ -29,10 +29,7 @@ fun ListWishlistScreen(wishlistDao: WishlistDao) {
                 Card(modifier = Modifier.padding(4.dp)) {
                     WishlistItem(
                         item = items[index],
-                        onEditClick = {
-                            // Placeholder for edit action, replace with actual logic
-                            Log.d("Wishlist", "Edit clicked for item: ${items[index].itemName}")
-                        },
+                        onEditClick = { onEditItem(items[index]) },
                         onDeleteClick = {
                             // Placeholder for delete action, replace with actual logic
                             Log.d("Wishlist", "Delete clicked for item: ${items[index].itemName}")
