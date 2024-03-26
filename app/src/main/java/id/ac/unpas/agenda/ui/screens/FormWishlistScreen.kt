@@ -3,15 +3,13 @@ package id.ac.unpas.agenda.ui.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.benasher44.uuid.uuid4
 import id.ac.unpas.agenda.models.Wishlist
@@ -22,82 +20,88 @@ import kotlinx.coroutines.launch
 fun FormWishlistScreen(wishlistDao: WishlistDao) {
     val scope = rememberCoroutineScope()
 
-    // State for holding form data
-    val itemName = remember { mutableStateOf(TextFieldValue("")) }
-    val description = remember { mutableStateOf(TextFieldValue("")) }
-    val category = remember { mutableStateOf(TextFieldValue("")) }
-    val price = remember { mutableStateOf(TextFieldValue("")) }
-    val status = remember { mutableStateOf(TextFieldValue("")) }
+    // State for holding form data as Strings
+    var itemName by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf("") }
+    val priceError = remember { mutableStateOf("") }
+    val categories = listOf("Pokok", "Sekunder")
+    var expanded by remember { mutableStateOf(false) }
+
+    // Check if all fields are filled
+    val isFormValid = itemName.isNotBlank() && description.isNotBlank() && category.isNotBlank() && price.isNotBlank() && status.isNotBlank()
 
     Column(modifier = Modifier.padding(10.dp)) {
         OutlinedTextField(
-            label = { Text(text = "Nama Barang") },
-            modifier = Modifier.fillMaxWidth(),
-            value = itemName.value,
-            onValueChange = {
-                itemName.value = it
-            }
+            label = { Text("Nama Barang") },
+            value = itemName,
+            onValueChange = { itemName = it },
+            modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            label = { Text(text = "Deskripsi") },
-            modifier = Modifier.fillMaxWidth(),
-            value = description.value,
-            onValueChange = {
-                description.value = it
-            }
+            label = { Text("Deskripsi") },
+            value = description,
+            onValueChange = { description = it },
+            modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
-            label = { Text(text = "Kategori") },
-            modifier = Modifier.fillMaxWidth(),
-            value = category.value,
-            onValueChange = {
-                category.value = it
-            }
+            label = { Text("Kategori") },
+            value = category,
+            onValueChange = { category = it },
+            modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             label = { Text(text = "Harga") },
             modifier = Modifier.fillMaxWidth(),
-            value = price.value,
-            onValueChange = {
-                price.value = it
-            }
+            value = price,
+            onValueChange = { price = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = priceError.value.isNotEmpty()
         )
+        if (priceError.value.isNotEmpty()) {
+            Text(text = priceError.value, color = androidx.compose.ui.graphics.Color.Red)
+        }
 
         OutlinedTextField(
-            label = { Text(text = "Link pembelian") },
-            modifier = Modifier.fillMaxWidth(),
-            value = status.value,
-            onValueChange = {
-                status.value = it
-            }
+            label = { Text("Link Pembelian") },
+            value = status,
+            onValueChange = { status = it },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Button(
-            modifier = Modifier.fillMaxWidth(),
             onClick = {
-                val item = Wishlist(
-                    id = uuid4().toString(),
-                    itemName = itemName.value.text,
-                    description = description.value.text,
-                    category = category.value.text,
-                    price = price.value.text.toDoubleOrNull() ?: 0.0,
-                    status = status.value.text
-                )
-                scope.launch {
-                    wishlistDao.upsert(item)
+                if (isFormValid) {
+                    val newItem = Wishlist(
+                        id = uuid4().toString(),
+                        itemName = itemName,
+                        description = description,
+                        category = category,
+                        price = price.toDoubleOrNull() ?: 0.0,
+                        status = status
+                    )
+                    scope.launch {
+                        wishlistDao.upsert(newItem)
+                    }
+
+                    // Clear the form
+                    itemName = ""
+                    description = ""
+                    category = ""
+                    price = ""
+                    status = ""
+                    priceError.value = ""
                 }
-                // Clear form fields after saving
-                itemName.value = TextFieldValue("")
-                description.value = TextFieldValue("")
-                category.value = TextFieldValue("")
-                price.value = TextFieldValue("")
-                status.value = TextFieldValue("")
-            }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = isFormValid // Button is only clickable if the form is valid
         ) {
-            Text(text = "Simpan")
+            Text("Simpan")
         }
     }
 }
