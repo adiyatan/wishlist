@@ -9,14 +9,17 @@ import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import id.ac.unpas.agenda.models.Wishlist
 import id.ac.unpas.agenda.persistences.WishlistDao
+import kotlinx.coroutines.launch
 
 @Composable
 fun ListWishlistScreen(wishlistDao: WishlistDao, onEditItem: (Wishlist) -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
     val wishlistItems: LiveData<List<Wishlist>> = wishlistDao.loadAll()
     val items: List<Wishlist> by wishlistItems.observeAsState(initial = listOf())
 
@@ -25,14 +28,14 @@ fun ListWishlistScreen(wishlistDao: WishlistDao, onEditItem: (Wishlist) -> Unit)
             .fillMaxWidth()
             .padding(8.dp)) {
             items(items.size) { index ->
-                // For each item, WishlistItem now includes onEditClick and onDeleteClick
                 Card(modifier = Modifier.padding(4.dp)) {
                     WishlistItem(
                         item = items[index],
                         onEditClick = { onEditItem(items[index]) },
                         onDeleteClick = {
-                            // Placeholder for delete action, replace with actual logic
-                            Log.d("Wishlist", "Delete clicked for item: ${items[index].itemName}")
+                            coroutineScope.launch {
+                                wishlistDao.delete(items[index].id) // Memanggil dalam coroutine
+                            }
                         }
                     )
                 }
@@ -40,3 +43,4 @@ fun ListWishlistScreen(wishlistDao: WishlistDao, onEditItem: (Wishlist) -> Unit)
         }
     }
 }
+

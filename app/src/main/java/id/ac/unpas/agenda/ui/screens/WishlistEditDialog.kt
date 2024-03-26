@@ -14,15 +14,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import id.ac.unpas.agenda.models.Wishlist
 import id.ac.unpas.agenda.persistences.WishlistDao
+import kotlinx.coroutines.launch
 
 /**
  * Displays a single Wishlist item inside a card, with options to edit and delete.
  */
 @Composable
 fun WishlistEditDialog(item: Wishlist, onDismiss: () -> Unit, wishlistDao: WishlistDao) {
-    // Gunakan state untuk memanipulasi input dari user
+    val coroutineScope = rememberCoroutineScope()
     val (itemName, setItemName) = remember { mutableStateOf(item.itemName) }
     val (description, setDescription) = remember { mutableStateOf(item.description) }
+    val (category, setCategory) = remember { mutableStateOf(item.category) }
+    val (price, setPrice) = remember { mutableStateOf(item.price.toString()) }
+    val (status, setStatus) = remember { mutableStateOf(item.status) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -31,15 +35,25 @@ fun WishlistEditDialog(item: Wishlist, onDismiss: () -> Unit, wishlistDao: Wishl
             Column {
                 TextField(value = itemName, onValueChange = setItemName, label = { Text("Nama Barang") })
                 TextField(value = description, onValueChange = setDescription, label = { Text("Deskripsi") })
-                // TextField untuk fields lainnya
+                TextField(value = category, onValueChange = setCategory, label = { Text("Kategori") })
+                TextField(value = price, onValueChange = setPrice, label = { Text("Harga") })
+                TextField(value = status, onValueChange = setStatus, label = { Text("Status") })
             }
         },
         confirmButton = {
             Button(onClick = {
-//                val updatedItem = item.copy(itemName = itemName, description = description) // Update fields lainnya
-//                val scope = rememberCoroutineScope()
-//                scope.launch { wishlistDao.update(updatedItem) }
-                onDismiss()
+                coroutineScope.launch {
+                    wishlistDao.update(
+                        item.copy(
+                            itemName = itemName,
+                            description = description,
+                            category = category,
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            status = status
+                        )
+                    )
+                    onDismiss()
+                }
             }) {
                 Text("Save")
             }
@@ -51,4 +65,3 @@ fun WishlistEditDialog(item: Wishlist, onDismiss: () -> Unit, wishlistDao: Wishl
         }
     )
 }
-
