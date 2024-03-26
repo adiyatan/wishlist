@@ -67,7 +67,7 @@ fun FormWishlistScreen(wishlistDao: WishlistDao) {
         )
 
         OutlinedTextField(
-            label = { Text(text = "Status") },
+            label = { Text(text = "Link pembelian") },
             modifier = Modifier.fillMaxWidth(),
             value = status.value,
             onValueChange = {

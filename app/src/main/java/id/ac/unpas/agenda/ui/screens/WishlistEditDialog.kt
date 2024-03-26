@@ -37,7 +37,7 @@ fun WishlistEditDialog(item: Wishlist, onDismiss: () -> Unit, wishlistDao: Wishl
                 TextField(value = description, onValueChange = setDescription, label = { Text("Deskripsi") })
                 TextField(value = category, onValueChange = setCategory, label = { Text("Kategori") })
                 TextField(value = price, onValueChange = setPrice, label = { Text("Harga") })
-                TextField(value = status, onValueChange = setStatus, label = { Text("Status") })
+                TextField(value = status, onValueChange = setStatus, label = { Text("Link pembelian") })
             }
         },
         confirmButton = {
